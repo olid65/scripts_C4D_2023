@@ -1,9 +1,11 @@
 from typing import Optional
 import c4d
 import os
-import urllib
+import urllib.request
 import json
 from pprint import pprint
+
+import socket
 
 doc: c4d.documents.BaseDocument  # The active document
 op: Optional[c4d.BaseObject]  # The active object, None if unselected
@@ -52,15 +54,18 @@ def url_swissmap(url):
     pref_courte = 'https://s.geo.admin.ch/'
     len_pref_courte = len(pref_courte)
 
+
+
+
     if len(url)> len_pref_courte and url[:len_pref_courte] == pref_courte:
-        try:
-            with urllib.request.urlopen(url, timeout = 1) as f:
-                url_full = f.geturl()
-                return url_full
-        except socket.timeout:
-            print("connection's timeout expired")
-        except:
-            print('prout')
+        # timeout in seconds
+        timeout = 5
+        socket.setdefaulttimeout(timeout)
+
+        with urllib.request.urlopen(url) as f:
+            url_full = f.geturl()
+            return url_full
+        
         return None
 
     # traitement de l'url
@@ -76,8 +81,7 @@ def main() -> None:
 
     url = c4d.GetStringFromClipboard()
     url_full = url_swissmap(url)
-    print(url_full)
-    return
+
     if not url_full:
         print(f"pas d'url ou url non valide :{url}->{url_full}")
     #url = 'https://s.geo.admin.ch/9a70479efb
@@ -143,7 +147,7 @@ def main() -> None:
             val = float(val)
         dico[key] = val
     layers = dico['layers']
-
+    
 
     for lyr in layers:
         fn_geojson = os.path.join(pth,lyr.replace('.','_')+'.geojson')
@@ -165,6 +169,10 @@ def main() -> None:
         #print(url)
 
         #req = urllib.request.Request(url=url)
+        # timeout in seconds
+        timeout = 10
+        socket.setdefaulttimeout(timeout)
+        
         try :
             with urllib.request.urlopen(url) as resp:
                 data = json.loads(resp.read().decode("utf-8"))

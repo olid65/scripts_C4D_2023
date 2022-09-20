@@ -41,7 +41,7 @@ def multipoint(coord):
         for x,z in coord:
             inst = c4d.BaseObject(c4d.Oinstance)
             inst.SetAbsPos(c4d.Vector(x,0,y)-pt_ref)
-            inst.InsertUnderLast(res)    
+            inst.InsertUnderLast(res)
     return res
 
 def polygon(coord):
@@ -122,7 +122,7 @@ def linestring(coord):
 def multilinestring(coord):
     if len(coord) == 1:
         return linestring(coord[0])
-    
+
     elif len(coord) > 1:
         pts = []
         segs = []
@@ -137,14 +137,14 @@ def multilinestring(coord):
         res = c4d.SplineObject(pcnt,c4d.SPLINETYPE_LINEAR)
         res[c4d.SPLINEOBJECT_CLOSED] = False
         res.SetAllPoints(pts)
-        
+
         res.ResizeObject(pcnt, len(segs))
         for i,cnt in enumerate(segs):
             res.SetSegment(i,cnt, closed = False)
         res.SetAbsPos(centre)
         res.Message(c4d.MSG_UPDATE)
         return res
-        
+
     #TODO gérer les plus grand que 1 -> vraies multiline
     return None
 
@@ -159,7 +159,9 @@ dico_func = {
 
 def main() -> None:
     origin = doc[CONTAINER_ORIGIN]
-    pth = '/Users/olivierdonze/Documents/Mandats/Vallee du Trient/C4D/Decoupages_pour_maquettes_physiques_expo/SIG'
+    pth = doc.GetDocumentPath()
+    pth = os.path.join(pth,'SIG')
+    #pth = '/Users/olivierdonze/Documents/Mandats/Vallee du Trient/C4D/Decoupages_pour_maquettes_physiques_expo/SIG'
     res = c4d.BaseObject(c4d.Onull)
     res.SetName(os.path.basename(pth))
     for fn in sorted(glob(os.path.join(pth,'*.geojson'))):
@@ -180,40 +182,40 @@ def main() -> None:
                         doc[CONTAINER_ORIGIN] = c4d.Vector(pos)
                         origin = doc[CONTAINER_ORIGIN]
                     pos-= origin
-        
-        
+
+
                     #attributs
                     attr = feature['properties']
                     if attr.get('name',None):
                         obj.SetName(attr['name'])
-        
+
                     elif attr.get('ELEV_MAX',None):
                         obj.SetName(attr['ELEV_MAX'])
-                    
+
                     elif attr.get('label',None):
                         obj.SetName(attr['label'])
-                    
+
                     elif attr.get('id',None):
                         obj.SetName(attr['id'])
-                    
+
                     elif attr.get('ID',None):
                         obj.SetName(attr['ID'])
-                    
+
                     else:
-                        obj.SetName('i'+str(i).zfill(3)) 
+                        obj.SetName('i'+str(i).zfill(3))
                     obj.SetAbsPos(pos)
-                    
+
                     dic_objs.setdefault(geom['type'],[]).append(obj)
-                
+
         if len(dic_objs.keys()) == 1:
             for k,lst in dic_objs.items():
-                for sp in lst : 
+                for sp in lst :
                     sp.InsertUnderLast(no)
         else:
             for k,lst in dic_objs.items():
                 ss_no = c4d.BaseObject(c4d.Onull)
                 ss_no.SetName(k)
-                for sp in lst : 
+                for sp in lst :
                     sp.InsertUnderLast(ss_no)
                 ss_no.InsertUnderLast(no)
 
