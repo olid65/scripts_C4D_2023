@@ -13,6 +13,18 @@ op: Optional[c4d.BaseObject]  # The active object, None if unselected
 CONTAINER_ORIGIN = 1026473
 
 
+"""Il faut avoir dans le presse papier une adresse web de map.geo.admin.ch 
+   (aller sous partage -> copier le lien)
+   
+   Si un objet est sélectionné -> bbox de l'objet
+   Sinon -> vue de haut
+   
+   L'API Rest de swisstopo est limitée à 201 objets par requête (50 indiquées dans la doc !)
+   C'est pour ça qu'il y a une boucle while dans chaque layer
+   Il faut vérifier qu'il y a bien toutes les entités car j'ai eu quelques soucis !!!!
+   et je ne suis pas certtain de mon coup ..."""
+
+
 def empriseVueHaut(bd, origine):
     dimension = bd.GetFrame()
     largeur = dimension["cr"] - dimension["cl"]
@@ -84,6 +96,7 @@ def main() -> None:
 
     if not url_full:
         print(f"pas d'url ou url non valide :{url}->{url_full}")
+        return
     #url = 'https://s.geo.admin.ch/9a70479efb
 
     #Geojson files are stored in a 'SIG' directory in the same place that doc
@@ -150,10 +163,13 @@ def main() -> None:
 
 
     for lyr in layers:
-        offset = 0
+        #if not visible : continue
+        offset = 1
         n = 1
-        while 1:
-            fn_geojson = os.path.join(pth,lyr.replace('.','_')+f'{n.fill(2)}'+'.geojson')
+        features = []
+        stop = False
+        while stop==False:
+            fn_geojson = os.path.join(pth,lyr.replace('.','_')+'.geojson')
     
             url_base = f'https://api3.geo.admin.ch/rest/services/api/MapServer/identify?'
             params = {
@@ -164,8 +180,7 @@ def main() -> None:
                 "lang":'fr',
                 "geometryType":"esriGeometryEnvelope",
                 "geometryFormat":"geojson",
-                "lang":'fr',
-                "offset":f'{offset}"
+                "offset":f'{offset-1}',
             }
     
             query_string = urllib.parse.urlencode( params )
@@ -175,32 +190,40 @@ def main() -> None:
             # timeout in seconds
             timeout = 10
             socket.setdefaulttimeout(timeout)
+            
+            try:
 
-            with urllib.request.urlopen(url) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                res = data.get('results',None)
-                nb = len(res)
-                if not res:
-                    offset = 0
-                    break
-                offset+=nb
+                with urllib.request.urlopen(url) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    res = data.get('results',None)
+                    nb = len(res)
+                    print(nb)
+                    if not res:
+                        stop = True
+                    offset+=nb
+                    
+                    for feat in res:
+                        d = {'type':feat['type'],
+                             'geometry' :feat['geometry'],
+                             'properties' :feat['properties'],
+                            }
+                        features.append(d)
+            except:
+                print(url)  
+                return  
 
-                features = []
-                for feat in res:
-                    d = {'type':feat['type'],
-                         'geometry' :feat['geometry'],
-                         'properties' :feat['properties'],
-                        }
-                    features.append(d)
-                dic_geojson = {"type": "FeatureCollection",
+            #print(fn_geojson)
+            n+=1
+            if n>100 : 
+                print(f"plus de 100 requêtes le fichier {lyr} sera incomplet !")
+                break
+        #conversion en objet c4d
+        
+        dic_geojson = {"type": "FeatureCollection",
                                "features": features,
                                "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::2056" } },}
-                with open(fn_geojson,'w',encoding='utf-8') as f:
-                    f.write(json.dumps(dic_geojson,indent = 4))
-
-            print(fn_geojson)
-            n+=1
-            if n>10 : break
+        with open(fn_geojson,'w',encoding='utf-8') as f:
+            f.write(json.dumps(dic_geojson,indent = 4))
 
 
 

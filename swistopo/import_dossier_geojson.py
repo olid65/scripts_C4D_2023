@@ -161,10 +161,11 @@ def main() -> None:
     origin = doc[CONTAINER_ORIGIN]
     pth = doc.GetDocumentPath()
     pth = os.path.join(pth,'SIG')
-    #pth = '/Users/olivierdonze/Documents/Mandats/Vallee du Trient/C4D/Decoupages_pour_maquettes_physiques_expo/SIG'
+    pth = '/Users/olivierdonze/switchdrive/Mandats/Parc_naturel_regional_vallee_Trient/c4d/SIG'
     res = c4d.BaseObject(c4d.Onull)
     res.SetName(os.path.basename(pth))
     for fn in sorted(glob(os.path.join(pth,'*.geojson'))):
+        print(fn)
         dic_objs = {}
         no = c4d.BaseObject(c4d.Onull)
         no.SetName(os.path.basename(fn)[:-8])
