@@ -165,7 +165,7 @@ def main() -> None:
                 "geometryType":"esriGeometryEnvelope",
                 "geometryFormat":"geojson",
                 "lang":'fr',
-                "offset":f'{offset}"
+                "offset":f"{offset}"
             }
     
             query_string = urllib.parse.urlencode( params )

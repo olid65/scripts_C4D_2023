@@ -67,7 +67,7 @@ class MyDialog(c4d.gui.GeDialog):
 
 if __name__=='__main__':
 
-    path = '/Users/olivierdonze/switchdrive/COURS/ORG_GN_2022/photos'
+    path = '/Users/olivierdonze/switchdrive/COURS/Cinema4D_niv1_2022/photos/groupe2'
     lst = glob(path+'/*.jpg')
 
     dlg = MyDialog(lst)
