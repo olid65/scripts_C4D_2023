@@ -13,16 +13,18 @@ op: Optional[c4d.BaseObject]  # The active object, None if unselected
 CONTAINER_ORIGIN = 1026473
 
 
-"""Il faut avoir dans le presse papier une adresse web de map.geo.admin.ch 
+"""Il faut avoir dans le presse papier une adresse web de map.geo.admin.ch
    (aller sous partage -> copier le lien)
-   
+
    Si un objet est sélectionné -> bbox de l'objet
    Sinon -> vue de haut
-   
+
    L'API Rest de swisstopo est limitée à 201 objets par requête (50 indiquées dans la doc !)
    C'est pour ça qu'il y a une boucle while dans chaque layer
    Il faut vérifier qu'il y a bien toutes les entités car j'ai eu quelques soucis !!!!
-   et je ne suis pas certtain de mon coup ..."""
+   et je ne suis pas certain de mon coup ...
+   
+   Enregistre dans un geo json par layer dans un dossier SIG au même endroit que le .c4d"""
 
 
 def empriseVueHaut(bd, origine):
@@ -170,7 +172,7 @@ def main() -> None:
         stop = False
         while stop==False:
             fn_geojson = os.path.join(pth,lyr.replace('.','_')+'.geojson')
-    
+
             url_base = f'https://api3.geo.admin.ch/rest/services/api/MapServer/identify?'
             params = {
                 "sr" : "2056",
@@ -182,15 +184,15 @@ def main() -> None:
                 "geometryFormat":"geojson",
                 "offset":f'{offset-1}',
             }
-    
+
             query_string = urllib.parse.urlencode( params )
             url = url_base+query_string
-    
+
             #req = urllib.request.Request(url=url)
             # timeout in seconds
             timeout = 10
             socket.setdefaulttimeout(timeout)
-            
+
             try:
 
                 with urllib.request.urlopen(url) as resp:
@@ -201,7 +203,7 @@ def main() -> None:
                     if not res:
                         stop = True
                     offset+=nb
-                    
+
                     for feat in res:
                         d = {'type':feat['type'],
                              'geometry' :feat['geometry'],
@@ -209,16 +211,16 @@ def main() -> None:
                             }
                         features.append(d)
             except:
-                print(url)  
-                return  
+                print(url)
+                return
 
             #print(fn_geojson)
             n+=1
-            if n>100 : 
+            if n>100 :
                 print(f"plus de 100 requêtes le fichier {lyr} sera incomplet !")
                 break
         #conversion en objet c4d
-        
+
         dic_geojson = {"type": "FeatureCollection",
                                "features": features,
                                "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::2056" } },}

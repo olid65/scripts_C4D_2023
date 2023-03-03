@@ -153,8 +153,8 @@ def main() -> None:
         offset = 0
         n = 1
         while 1:
-            fn_geojson = os.path.join(pth,lyr.replace('.','_')+f'{n.fill(2)}'+'.geojson')
-    
+            fn_geojson = os.path.join(pth,lyr.replace('.','_')+f'{str(n)zfill(2)}'+'.geojson')
+
             url_base = f'https://api3.geo.admin.ch/rest/services/api/MapServer/identify?'
             params = {
                 "sr" : "2056",
@@ -167,10 +167,10 @@ def main() -> None:
                 "lang":'fr',
                 "offset":f"{offset}"
             }
-    
+
             query_string = urllib.parse.urlencode( params )
             url = url_base+query_string
-    
+
             #req = urllib.request.Request(url=url)
             # timeout in seconds
             timeout = 10
