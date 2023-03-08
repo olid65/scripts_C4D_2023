@@ -5,7 +5,9 @@ import sys
 doc: c4d.documents.BaseDocument  # The active document
 op: Optional[c4d.BaseObject]  # The active object, None if unselected
 
-def add_point_at_base(pts, alt_base = 0):
+ALT_BASE = 0
+
+def add_point_at_base(pts, alt_base = ALT_BASE):
     # insert point at the beginning and the end of the list with y = alt_base
     pt = c4d.Vector(pts[0])
     pt.y = alt_base
@@ -37,7 +39,7 @@ def main() -> None:
         #message dialog
         c4d.gui.MessageDialog("Please select a polygonal object")
         return
-    alt_base = 0
+    alt_base = ALT_BASE
     #objet connector
     connector = c4d.BaseObject(c4d.Oconnector)
     connector[c4d.CONNECTOBJECT_PHONG_MODE] = c4d.CONNECTOBJECT_PHONG_MODE_MANUAL

@@ -23,7 +23,7 @@ CONTAINER_ORIGIN = 1026473
    C'est pour ça qu'il y a une boucle while dans chaque layer
    Il faut vérifier qu'il y a bien toutes les entités car j'ai eu quelques soucis !!!!
    et je ne suis pas certain de mon coup ...
-   
+
    Enregistre dans un geo json par layer dans un dossier SIG au même endroit que le .c4d"""
 
 
@@ -165,6 +165,8 @@ def main() -> None:
 
 
     for lyr in layers:
+        print('-'*20)
+        print(lyr)
         #if not visible : continue
         offset = 1
         n = 1
@@ -212,7 +214,7 @@ def main() -> None:
                         features.append(d)
             except:
                 print(url)
-                return
+                break
 
             #print(fn_geojson)
             n+=1
