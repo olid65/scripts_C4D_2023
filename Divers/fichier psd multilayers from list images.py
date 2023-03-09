@@ -36,18 +36,3 @@ def main() -> None:
     fn_psd = f'{pth}/test.psd'
     pred.Save(fn_psd,c4d.FILTER_PSD,data=None,savebits = c4d.SAVEBIT_MULTILAYER)
     print(pred.GetLayerCount())
-    
-
-
-
-    
-        
-
-"""
-def state():
-    # Defines the state of the command in a menu. Similar to CommandData.GetState.
-    return c4d.CMD_ENABLED
-"""
-
-if __name__ == '__main__':
-    main()

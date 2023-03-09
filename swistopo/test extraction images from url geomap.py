@@ -7,7 +7,8 @@ import math
 import urllib.request
 from datetime import datetime
 import socket
-
+import string
+import unicodedata
 
 CONTAINER_ORIGIN =1026473
 
@@ -23,6 +24,40 @@ FORMAT = 'png'
 
 NOM_DOSSIER_IMG = 'tex/__back_image'
 
+def make_valid_filename(s):
+    """
+    Remplace tous les caractères accentués et spéciaux, les espaces et la ponctuation
+    dans une chaîne de caractères pour créer un nom de fichier valide.
+    """
+    # convertir en minuscules
+    s = s.lower()
+
+    # remplacer les caractères accentués et spéciaux
+    s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+
+    # remplacer les espaces et la ponctuation
+    valid_chars = "-_() %s%s" % (string.ascii_letters, string.digits)
+    s = ''.join(c for c in s if c in valid_chars)
+    
+    #remplacer les espaces par underscore et supprimer les doubles
+    s = s.replace(' ','_')
+    s = s.replace('-','_')
+    s = s.replace('(','_')
+    s = s.replace(')','_')
+    
+    # suppression des doubles underscore
+    i = 0
+    while s.find('__')!=-1:
+        s = s.replace('__','_')
+        i+=1
+        if i>10 : 
+            print('pb')
+            break
+    if s[-1]=='_':
+        s = s[:-1]
+
+    return s
+
 def empriseVueHaut(bd,origine):
 
     dimension = bd.GetFrame()
@@ -35,7 +70,7 @@ def empriseVueHaut(bd,origine):
     return  mini,maxi,largeur,hauteur
 
 def display_wms_swisstopo(layer):
-    
+
     #le doc doit être en mètres
     doc = c4d.documents.GetActiveDocument()
 
@@ -69,35 +104,35 @@ def display_wms_swisstopo(layer):
     if not camera[c4d.CAMERA_PROJECTION]== c4d.Ptop:
         c4d.gui.MessageDialog("""Ne fonctionne qu'avec une caméra en projection "haut" """)
         return
-    
+
     #pour le format de la date regarder : https://docs.python.org/fr/3/library/datetime.html#strftime-strptime-behavior
     dt = datetime.now()
     suffixe_time = dt.strftime("%y%m%d_%H%M%S")
 
     fn = f'ortho{suffixe_time}.png'
     fn_img = os.path.join(dossier_img,fn)
-    
+
     if not os.path.isdir(dossier_img):
             os.makedirs(dossier_img)
-    
+
     mini,maxi,width_img,height_img = empriseVueHaut(bd,origine)
     #print (mini.x,mini.z,maxi.x,maxi.z)
     bbox = f'{mini.x},{mini.z},{maxi.x},{maxi.z}'
-    
+
     url = f'http://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS={layer}&STYLES=default&CRS=EPSG:2056&BBOX={bbox}&WIDTH={width_img}&HEIGHT={height_img}&FORMAT=image/png'
     #print(url)
-    
-    
-    
+
+
+
     try:
         x = urllib.request.urlopen(url)
-    
+
         with open(fn_img,'wb') as saveFile:
             saveFile.write(x.read())
-            
+
     except Exception as e:
         print(str(e))
-        
+
     #on récupère l'ancienne image
     old_fn = os.path.join(dossier_img,bd[c4d.BASEDRAW_DATA_PICTURE])
 
@@ -178,15 +213,17 @@ def make_editable(op,doc):
 
     return None
 
-def creer_mat(fn, doc, alpha = False):
+def creer_mat(fn, doc, nom_mat = None,alpha = False):
     nom = os.path.basename(fn)
+    if not nom_mat :
+        nom_mat = nom
     relatif = False
     docpath = doc.GetDocumentPath()
     if docpath:
         relatif = c4d.IsInSearchPath(nom, docpath)
         #print(nom,relatif)
     mat = c4d.BaseMaterial(c4d.Mmaterial)
-    mat.SetName(nom)
+    mat.SetName(nom_mat)
     shd = c4d.BaseList2D(c4d.Xbitmap)
 
     if relatif:
@@ -298,10 +335,10 @@ class Bbox(object):
                 'Y : '+str(self.min.z)+'-'+str(self.max.z)+'->'+str(self.max.z-self.min.z))
 
     def GetCube(self,haut = 200):
-    	res = c4d.BaseObject(c4d.Ocube)
-    	taille = c4d.Vector(self.largeur,haut,self.hauteur)
-    	res.SetAbsPos(self.centre)
-    	return res
+        res = c4d.BaseObject(c4d.Ocube)
+        taille = c4d.Vector(self.largeur,haut,self.hauteur)
+        res.SetAbsPos(self.centre)
+        return res
 
     @staticmethod
     def fromObj(obj,origine = c4d.Vector()):
@@ -397,7 +434,7 @@ def getInfosFromUrlSwisstopo(url_full):
                 # pour les voyages temporels
                 #la date est sous la forme 18641231 -> on récupère que l'année
                 val = [int(v[:4]) for v in val.split(',') if v]
-            elif key in ['E','N','zoom']: 
+            elif key in ['E','N','zoom']:
                 val = float(val)
             dico[key] = val
         return dico
@@ -462,7 +499,7 @@ class SwissImagesDlg (c4d.gui.GeDialog):
     ID_NB_POLYS_HAUT = 1058
 
     ID_GRP_BUTTONS = 1070
-    
+
     ID_BTON_REQUEST = 1072
     ID_BTON_REQUEST_ALL = 1073
 
@@ -505,15 +542,15 @@ class SwissImagesDlg (c4d.gui.GeDialog):
 
         self.gadgets_taille = []
         self.emprise_OK = False
-        
+
         #URL depuis le presse papier
         url = c4d.GetStringFromClipboard()
         url_full = url_swissmap(url)
-    
+
         if not url_full:
             c4d.gui.MessageDialog(f"pas d'url ou url non valide :{url}->{url_full}")
             #TODO qu'est qu'on fait si pas url valide'
-            
+
         #liste des layers de l'url'
         dico = getInfosFromUrlSwisstopo(url_full)
         layers = dico['layers']
@@ -534,10 +571,10 @@ class SwissImagesDlg (c4d.gui.GeDialog):
                 owner = lyr['attributes']['dataOwner']
                 lyr_bod_id = lyr['layerBodId']
                 dic_translate[lyr['layerBodId']] = name
-        
+
         for lyr in layers :
             self.LIST_WEB_SERVICES.append({'name':dic_translate.get(lyr,lyr),'layer':lyr})
-        
+
 
         return
 
@@ -625,7 +662,7 @@ class SwissImagesDlg (c4d.gui.GeDialog):
         self.SetFloat(self.ID_YMIN, bbox.min.z,format = c4d.FORMAT_METER)
         self.SetFloat(self.ID_YMAX, bbox.max.z,format = c4d.FORMAT_METER)
         self.verif_coordonnees()
-    
+
     def copier_coordonnees(self):
         ymax = self.GetFloat(self.ID_YMAX)
         ymin = self.GetFloat(self.ID_YMIN)
@@ -650,10 +687,11 @@ class SwissImagesDlg (c4d.gui.GeDialog):
         #test
         xmin,ymin,xmax,ymax = self.getBbox()
         width,height  = self.getDefinition()
-        
+
         #on prend le nom du service en minuscule et on remplace l'espaces par underscore
-        name =service['name'].lower().replace(' ','_')
-        name_img = f'{name}_{round(xmin)}_{round(ymin)}_{round(xmax)}_{round(ymax)}_.{format}'
+        name =service['name']
+        name_img_base = make_valid_filename(name)
+        name_img = f'{name_img_base}_{round(xmin)}_{round(ymin)}_{round(xmax)}_{round(ymax)}.{format}'
 
         pth_dir = tex_folder(doc, subfolder = 'swisstopo_images')
         fn_img = os.path.join(pth_dir,name_img)
@@ -667,7 +705,7 @@ class SwissImagesDlg (c4d.gui.GeDialog):
 
         try :
             x = urllib.request.urlopen(url)
-        
+
         except :
             c4d.gui.MessageDialog(f'Problème pour le téléchargement de {name}')
             return None
@@ -681,11 +719,11 @@ class SwissImagesDlg (c4d.gui.GeDialog):
 
         if not os.path.isfile(fn_img):
             return None
-        
+
         doc.StartUndo()
 
         #création du matériau
-        mat = creer_mat(fn_img, doc, alpha = False)
+        mat = creer_mat(fn_img, doc, nom_mat = name, alpha = False)
         doc.InsertMaterial(mat)
         doc.AddUndo(c4d.UNDOTYPE_NEWOBJ,mat)
 
@@ -699,7 +737,7 @@ class SwissImagesDlg (c4d.gui.GeDialog):
 
         doc.EndUndo()
         c4d.EventAdd()
-        
+
 
         return True
 
@@ -722,7 +760,7 @@ class SwissImagesDlg (c4d.gui.GeDialog):
             choix_list = self.GetInt32(self.ID_LST_CHOIX_IMG)
             #print(self.LIST_WEB_SERVICES(choix_list-1)['url_base'])
             display_wms_swisstopo(self.LIST_WEB_SERVICES[choix_list-1]['layer'])
-            
+
 
         # MODIFICATIONS COORDONNEES
         if id == self.ID_XMIN:
@@ -787,7 +825,7 @@ class SwissImagesDlg (c4d.gui.GeDialog):
 
         #DOWNLOAD IMAGE AND MATERIAL CREATION
 
-        if id == self.ID_BTON_REQUEST:           
+        if id == self.ID_BTON_REQUEST:
             #extraction de l'image
             choix_list = self.GetInt32(self.ID_LST_CHOIX_IMG)
             #print(self.LIST_WEB_SERVICES(choix_list-1)['url_base'])
@@ -795,7 +833,7 @@ class SwissImagesDlg (c4d.gui.GeDialog):
             #layer = service['layer']
             fn_img = self.extract_IMG(service)
 
-        if id == self.ID_BTON_REQUEST_ALL:           
+        if id == self.ID_BTON_REQUEST_ALL:
             #extraction de toute la liste d'image
             for service in self.LIST_WEB_SERVICES:
                 #lyr = service['layer']
@@ -939,4 +977,4 @@ def main():
 
 # Execute main()
 if __name__=='__main__':
-    main()
+    main() 
