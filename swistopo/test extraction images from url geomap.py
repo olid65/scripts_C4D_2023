@@ -38,19 +38,19 @@ def make_valid_filename(s):
     # remplacer les espaces et la ponctuation
     valid_chars = "-_() %s%s" % (string.ascii_letters, string.digits)
     s = ''.join(c for c in s if c in valid_chars)
-    
+
     #remplacer les espaces par underscore et supprimer les doubles
     s = s.replace(' ','_')
     s = s.replace('-','_')
     s = s.replace('(','_')
     s = s.replace(')','_')
-    
+
     # suppression des doubles underscore
     i = 0
     while s.find('__')!=-1:
         s = s.replace('__','_')
         i+=1
-        if i>10 : 
+        if i>10 :
             print('pb')
             break
     if s[-1]=='_':
@@ -699,7 +699,8 @@ class SwissImagesDlg (c4d.gui.GeDialog):
         if os.path.isfile(fn_img):
             if not c4d.gui.QuestionDialog(self.TXT_FILE_EXIST):
                 return None
-
+        print(xmin,ymin,xmax,ymax)
+        print(width,height)
         #url = f'{url_base}export?bbox={xmin},{ymin},{xmax},{ymax}&format={format}&size={width},{height}&f=image&bboxSR={sr}&imageSR={sr}'#.format(bbox,size,bboxSR,imageSR)
         url = f'http://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS={layer}&STYLES=default&CRS=EPSG:2056&BBOX={xmin},{ymin},{xmax},{ymax}&WIDTH={width}&HEIGHT={height}&FORMAT=image/png'
 
@@ -977,4 +978,4 @@ def main():
 
 # Execute main()
 if __name__=='__main__':
-    main() 
+    main()
