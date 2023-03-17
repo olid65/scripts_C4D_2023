@@ -6,6 +6,8 @@ op: Optional[c4d.BaseObject]  # The active object, None if unselected
 
 """Mettre les caméras en haut de la liste des objets et sélectionner l'objet polygonal"""
 
+# From https://code.vonc.fr/selections
+# Merci à César Vonc !
 def CalculeNormalesPolys(obj) :
 
     """
@@ -32,6 +34,8 @@ def CalculeNormalesPolys(obj) :
 
     return norPolys
 
+# From https://code.vonc.fr/selections
+# Merci à César Vonc !
 def CalculeCentrePolys(obj) :
 
     """
