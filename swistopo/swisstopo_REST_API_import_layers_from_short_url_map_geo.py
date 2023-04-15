@@ -153,7 +153,7 @@ def main() -> None:
         offset = 0
         n = 1
         while 1:
-            fn_geojson = os.path.join(pth,lyr.replace('.','_')+f'{str(n)zfill(2)}'+'.geojson')
+            fn_geojson = os.path.join(pth,lyr.replace('.','_')+f'{str(n).zfill(2)}'+'.geojson')
 
             url_base = f'https://api3.geo.admin.ch/rest/services/api/MapServer/identify?'
             params = {
