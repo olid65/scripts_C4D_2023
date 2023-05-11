@@ -3,7 +3,7 @@ import os.path
 
 import sys
 
-sys.path.append('/Users/olivierdonze/opt/anaconda3/lib/python3.8/site-packages')
+sys.path.append('/Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages')
 from geojson import Point, MultiPoint, Polygon, MultiPolygon, LineString, MultiLineString, Feature, FeatureCollection, load
 
 
@@ -119,7 +119,7 @@ def multilinestring(coord):
     for seg in coord:
         segments.append(len(seg))
         pts += [lst2vec(p) for p in seg]
-    
+
     centre = get_centre(pts)
     pts = list(map(lambda v: v-centre, pts))
     pcnt = len(pts)
@@ -184,6 +184,9 @@ def main():
 
             if attr.get('ELEV_MAX',None):
                 obj.SetName(attr['ELEV_MAX'])
+                
+            if attr.get('label',None):
+                obj.SetName(attr['label'])    
 
 
             obj.SetAbsPos(pos)
