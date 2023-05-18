@@ -5,6 +5,7 @@ import os
 from zipfile import ZipFile
 from pprint import pprint
 import subprocess
+import sys
 
 # Script state in the menu or the command palette
 # Return True or c4d.CMD_ENABLED to enable, False or 0 to disable
@@ -88,6 +89,42 @@ def get_list_from_STAC_swisstopo(url,xmin,ymin,xmax,ymax):
                     res.append(dic['href'])
     return res
 
+def getPathToQGISbin(path_to_QGIS = None):
+    #Si le path_to_QGIS n'est pas renseigné on prend le chemin par défaut selon la plateforme
+    win = sys.platform == 'win32'
+    if not path_to_QGIS:
+        if sys.platform == 'win32':
+            path_to_QGIS = 'C:\\Program Files'
+        else:
+            path_to_QGIS = '/Applications'
+    for folder_name in os.listdir(path_to_QGIS):
+        if 'QGIS'  in folder_name:
+            if win :
+                path = os.path.join(path_to_QGIS,folder_name,'bin')
+            else:
+
+                path = os.path.join(path_to_QGIS,folder_name,'Contents/MacOS/bin')
+
+            if os.path.isdir(path):
+                # on vérifie qu'il y ait bien gdal_translate
+                #TODO vérifier les autres 
+                if win :
+                    if os.path.isfile(os.path.join(path,'gdal_translate.exe')):
+                        return path
+                else:
+                    if os.path.isfile(os.path.join(path,'gdal_translate')):
+                        return path
+    return None
+
+def ogrBIN_OK(path_to_QGIS_bin, exe = 'ogr2ogr'):
+    if sys.platform == 'win32':
+        exe+='.exe'
+    path = os.path.join(path_to_QGIS_bin,exe)
+    if os.path.isfile(path):
+        return path
+    else:
+        return False
+
 # Main function
 def main():
     path_doc = doc.GetDocumentPath()
@@ -108,17 +145,34 @@ def main():
     if not os.path.isdir(pth_shapefile):
         os.mkdir(pth_shapefile)
 
-    path_to_ogr2ogr = '/Applications/QGIS.app/Contents/MacOS/bin/ogr2ogr'
+    #chemin pour ogr2ogr
 
-
-    #pprint(suppr_doublons_list_ortho(LST))
+    path_to_QGISbin = getPathToQGISbin()
+    if not path_to_QGISbin:
+        c4d.gui.MessageDialog("QGIS n'est pas installé ou le chemin n'est pas le bon")
+        return True
+    
+    
+    #on vérifie que ogr2ogr est bien là
+    path_to_ogr2ogr = ogrBIN_OK(path_to_QGISbin)
+    if not path_to_QGISbin:
+        c4d.gui.MessageDialog("Il semble qu'il manque ogr2ogr dans le dossier de QGIS")
+        return True
+    
 
     origine = doc[CONTAINER_ORIGIN]
 
+    #si pas d'origine message et on quitte
+    if not origine:
+        c4d.gui.MessageDialog("Le document doit être géoréférencé")
+        return
+    
+    mode = None
 
     #Si on a un objet sélectionné qui a une géométrie on l'utilise pour la bbox'
     if op and op.CheckType(c4d.Opoint):
         mini,maxi = empriseObject(op, origine)
+        mode = "l'objet sélectionné"
 
     #sinon on prend la vue de haut
     else :
@@ -126,9 +180,14 @@ def main():
         camera = bd.GetSceneCamera(doc)
 
         if not camera[c4d.CAMERA_PROJECTION] == c4d.Ptop:
-            c4d.gui.MessageDialog("Activez une vue de haut")
+            c4d.gui.MessageDialog("Activez une vue de haut ou sélectionnez un objet pour l'emprise")
             return True
+        mode = 'la vue de haut'
         mini, maxi = empriseVueHaut(bd, origine)
+    
+    #message pour confirmer le mode
+    rep = c4d.gui.QuestionDialog(f"L'extraction va se faire selon l'emprise de {mode}.\nVoulez-vous continuer ?")
+    if not rep : return
 
     xmin,ymin,xmax,ymax = mini.x,mini.z,maxi.x,maxi.z
     #url = 'swissbuildings3d_3_0_2016_1304-42_2056_5728.gdb.zip'
@@ -176,7 +235,8 @@ def main():
                 #print(req)
                 output = subprocess.check_output(req,shell=True)
 
-    print('ok')
+    #message pour avertir que c'est fini
+    c4d.gui.MessageDialog("Extraction terminée")
 
 
 # Execute main(lst)

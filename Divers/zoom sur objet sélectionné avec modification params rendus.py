@@ -1,7 +1,7 @@
 import c4d
 
-SCALE = 25000
-RES = 220 #pixel/pouce
+SCALE = 16000
+RES = 300 #pixel/pouce
 
 #TODO tenir compte si on est en cm ou m !!!!!!
 

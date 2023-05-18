@@ -6,7 +6,7 @@ doc: c4d.documents.BaseDocument  # The active document
 op: Optional[c4d.BaseObject]  # The active object, None if unselected
 
 #rounding angle
-ROUND = 3
+ROUND = 1
 
 def selectContour(op):
 
@@ -87,15 +87,16 @@ def main() -> None:
 
     #edge to spline
     sp = edge2spline(op)
-
+    
+    #ATTENTION FAIT PLANTER C4D !
     #optimize spline
-    c4d.utils.SendModelingCommand(command = c4d.MCOMMAND_OPTIMIZE,
-                                    list = [sp],
-                                    mode = c4d.MODELINGCOMMANDMODE_POINTSELECTION,
-                                    doc = doc)
+    # c4d.utils.SendModelingCommand(command = c4d.MCOMMAND_OPTIMIZE,
+    #                                 list = [sp],
+    #                                 mode = c4d.MODELINGCOMMANDMODE_POINTSELECTION,
+    #                                 doc = doc)
 
     #unfold the object
-    op.DelBit(c4d.BIT_OFOLD)
+    op.SetBit(c4d.BIT_OFOLD)
 
     #get spline angles
     angles = getSplineAngles(sp)
