@@ -20,6 +20,7 @@ SCALE_BUILDINGS = 1.25
 #def state():
 #    return True
 
+#ATTENTION SI LE DOC EST GEOREFERENCE AVEC UNE ALTITUDE AUTRE QUE 0 -> problème
 CONTAINER_ORIGIN = 1026473
 
 TXT_NOT_SAVED = "Le document doit être enregistré pour pouvoir copier les buildings, vous pourrez le faire à la prochaine étape\nVoulez-vous continuer ?"
@@ -288,6 +289,15 @@ class Bbox(object):
         maxi = c4d.Vector(max([p.x for p in pts]),max([p.y for p in pts]),max([p.z for p in pts])) + origine
 
         return Bbox(mini,maxi)
+    
+    def getCube(self,haut = 2000):
+        res = c4d.BaseObject(c4d.Ocube)
+        taille = c4d.Vector(self.largeur,haut,self.hauteur)
+        res[c4d.PRIM_CUBE_LEN] = taille
+        pos = self.centre
+        pos.y = haut/2
+        res.SetAbsPos(self.centre)
+        return res
 
 ############################################################################################################
 #FERMETURE DES TROUS
@@ -540,6 +550,35 @@ def main():
             scale = o.GetAbsScale()
             scale.y = SCALE_BUILDINGS
             o.SetAbsScale(scale)
+    
+    ############################
+    #Sytème pour découper les bâtiments
+    ############################
+    #objet connector
+    connector = c4d.BaseObject(c4d.Oconnector)
+    connector[c4d.CONNECTOBJECT_PHONG_MODE]= c4d.CONNECTOBJECT_PHONG_MODE_MANUAL
+    connector.SetName('swissbuildings3D_v3')
+
+    #objet booleen
+    booleen = c4d.BaseObject(c4d.Oboole)
+    booleen[c4d.BOOLEOBJECT_TYPE] = c4d.BOOLEOBJECT_TYPE_INTERSECT
+    booleen[c4d.BOOLEOBJECT_HIGHQUALITY] = True
+    #on le désactive
+    booleen[c4d.ID_BASEOBJECT_GENERATOR_FLAG] = False
+    booleen.InsertUnder(connector)
+
+
+    #on crée un cube pour découper les bâtiments
+    cube = bbox_mnt.getCube()
+    cubcubeeube[c4d.ID_BASEOBJECT_XRAY] = True
+    cube.InsertUnder(booleen)
+
+    #on insère les bâtiemnts
+    onull_bat.InsertUnder(booleen)
+
+    doc.InsertObject(connector)
+    doc.AddUndo(c4d.UNDOTYPE_NEW,connector)
+
     doc.EndUndo()
     c4d.EventAdd()
 
