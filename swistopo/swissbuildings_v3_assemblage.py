@@ -115,7 +115,7 @@ def getPathToQGISbin(path_to_QGIS = None):
 
             if os.path.isdir(path):
                 # on vérifie qu'il y ait bien gdal_translate
-                #TODO vérifier les autres 
+                #TODO vérifier les autres
                 if win :
                     if os.path.isfile(os.path.join(path,'gdal_translate.exe')):
                         return path
@@ -132,7 +132,7 @@ def ogrBIN_OK(path_to_QGIS_bin, exe = 'ogr2ogr'):
         return path
     else:
         return False
-    
+
 ############################################################################################################
 #IMPORT SHAPEFILES
 ############################################################################################################
@@ -169,14 +169,14 @@ def import_swissbuildings3D_v3_shape(fn,doc):
         xs = [x for x,y in shape.points]
         zs = [y for x,y in shape.points]
         ys = [z for z in shape.z]
-        
+
         #pour l'axe on prend la moyenne de x et z et le min de y auquel on ajoute 3m
-        #car les bati swisstopo rajoute 3m sous le point le plus bas du MNT    
-        #comme ça on peut modifier l'échelle des hauteurs  
+        #car les bati swisstopo rajoute 3m sous le point le plus bas du MNT
+        #comme ça on peut modifier l'échelle des hauteurs
         axe = c4d.Vector((min(xs)+max(xs))/2,min(ys)+3,(min(zs)+max(zs))/2)
-        
+
         pts = [c4d.Vector(x,z,y)-axe for (x,y),z in zip(shape.points,shape.z)]
-        
+
         nb_pts = len(pts)
         polys = []
 
@@ -289,7 +289,7 @@ class Bbox(object):
         maxi = c4d.Vector(max([p.x for p in pts]),max([p.y for p in pts]),max([p.z for p in pts])) + origine
 
         return Bbox(mini,maxi)
-    
+
     def getCube(self,haut = 2000):
         res = c4d.BaseObject(c4d.Ocube)
         taille = c4d.Vector(self.largeur,haut,self.hauteur)
@@ -386,14 +386,14 @@ def main():
     if not path_to_QGISbin:
         c4d.gui.MessageDialog("QGIS n'est pas installé ou le chemin n'est pas le bon")
         return True
-    
-    
+
+
     #on vérifie que ogr2ogr est bien là
     path_to_ogr2ogr = ogrBIN_OK(path_to_QGISbin)
     if not path_to_QGISbin:
         c4d.gui.MessageDialog("Il semble qu'il manque ogr2ogr dans le dossier de QGIS")
         return True
-    
+
 
     origine = doc[CONTAINER_ORIGIN]
 
@@ -401,7 +401,7 @@ def main():
     if not origine:
         c4d.gui.MessageDialog("Le document doit être géoréférencé")
         return
-    
+
     mode = None
 
     #Si on a un objet sélectionné qui a une géométrie on l'utilise pour la bbox'
@@ -419,7 +419,7 @@ def main():
             return True
         mode = 'la vue de haut'
         mini, maxi = empriseVueHaut(bd, origine)
-    
+
     #message pour confirmer le mode
     rep = c4d.gui.QuestionDialog(f"L'extraction va se faire selon l'emprise de {mode}.\nVoulez-vous continuer ?")
     if not rep : return
@@ -434,7 +434,7 @@ def main():
     for url in lst:
         name = url.split('/')[-1]
         fn_dst = os.path.join(pth,name)
-        
+
         #on télécharge uniquement si le dossier gdb n'existe pas
         #pour le nom du gdb c'est un peu complexe
         #le fichier zippé s'appelle : swissbuildings3d_3_0_2020_1301-11_2056_5728.gdb.zip
@@ -488,7 +488,7 @@ def main():
     bbox_mnt = Bbox(mini-origine,maxi-origine)
     #print(bbox_mnt)
     del_lst = []
-    for onull in onull_bat.GetChildren():    
+    for onull in onull_bat.GetChildren():
         for o in onull.GetChildren():
             bbox = Bbox.fromObj(o)
             if not bbox.touch(bbox_mnt):
@@ -496,26 +496,26 @@ def main():
     #on efface
     for o in del_lst:
         o.Remove()
-    
+
     #OPTIMISATION, fermeture des trous, et mise en rouge si pas ok
 
-    for onull in onull_bat.GetChildren():    
-        
+    for onull in onull_bat.GetChildren():
+
         #OPTIMIZE POINTS
         settings = c4d.BaseContainer()  # Settings
         settings[c4d.MDATA_OPTIMIZE_TOLERANCE] = 0.1
         settings[c4d.MDATA_OPTIMIZE_POINTS] = True
         settings[c4d.MDATA_OPTIMIZE_POLYGONS] = True
         settings[c4d.MDATA_OPTIMIZE_UNUSEDPOINTS] = True
-    
-    
-    
+
+
+
         res = c4d.utils.SendModelingCommand(command=c4d.MCOMMAND_OPTIMIZE,
                                         list=[o for o in onull.GetChildren()],
                                         mode=c4d.MODELINGCOMMANDMODE_POLYGONSELECTION,
                                         bc=settings,
                                         doc=doc)
-    
+
         for o in onull.GetChildren():
             #on ferme d'abord les polygones'
             closePolys(o,doc)
@@ -550,7 +550,7 @@ def main():
             scale = o.GetAbsScale()
             scale.y = SCALE_BUILDINGS
             o.SetAbsScale(scale)
-    
+
     ############################
     #Sytème pour découper les bâtiments
     ############################
@@ -570,7 +570,7 @@ def main():
 
     #on crée un cube pour découper les bâtiments
     cube = bbox_mnt.getCube()
-    cubcubeeube[c4d.ID_BASEOBJECT_XRAY] = True
+    cube[c4d.ID_BASEOBJECT_XRAY] = True
     cube.InsertUnder(booleen)
 
     #on insère les bâtiemnts
