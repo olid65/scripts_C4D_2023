@@ -107,7 +107,7 @@ def getPathToQGISbin(path_to_QGIS = None):
 
             if os.path.isdir(path):
                 # on vérifie qu'il y ait bien gdal_translate
-                #TODO vérifier les autres 
+                #TODO vérifier les autres
                 if win :
                     if os.path.isfile(os.path.join(path,'gdal_translate.exe')):
                         return path
@@ -151,14 +151,14 @@ def main():
     if not path_to_QGISbin:
         c4d.gui.MessageDialog("QGIS n'est pas installé ou le chemin n'est pas le bon")
         return True
-    
-    
+
+
     #on vérifie que ogr2ogr est bien là
     path_to_ogr2ogr = ogrBIN_OK(path_to_QGISbin)
     if not path_to_QGISbin:
         c4d.gui.MessageDialog("Il semble qu'il manque ogr2ogr dans le dossier de QGIS")
         return True
-    
+
 
     origine = doc[CONTAINER_ORIGIN]
 
@@ -166,7 +166,7 @@ def main():
     if not origine:
         c4d.gui.MessageDialog("Le document doit être géoréférencé")
         return
-    
+
     mode = None
 
     #Si on a un objet sélectionné qui a une géométrie on l'utilise pour la bbox'
@@ -184,7 +184,7 @@ def main():
             return True
         mode = 'la vue de haut'
         mini, maxi = empriseVueHaut(bd, origine)
-    
+
     #message pour confirmer le mode
     rep = c4d.gui.QuestionDialog(f"L'extraction va se faire selon l'emprise de {mode}.\nVoulez-vous continuer ?")
     if not rep : return
@@ -199,7 +199,7 @@ def main():
     for url in lst:
         name = url.split('/')[-1]
         fn_dst = os.path.join(pth,name)
-        
+
         #on télécharge uniquement si le dossier gdb n'existe pas
         #pour le nom du gdb c'est un peu complexe
         #le fichier zippé s'appelle : swissbuildings3d_3_0_2020_1301-11_2056_5728.gdb.zip
