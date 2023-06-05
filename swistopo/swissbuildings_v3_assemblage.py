@@ -11,8 +11,8 @@ import shapefile as shp
 #ID pour stocker l'échelle du MNT si on veut pouvoir la changer après
 ID_BUILDING_SCALE = 1059451
 
-SCALE_MNT = 2.5
-SCALE_BUILDINGS = 1.25
+SCALE_MNT = 1.5
+SCALE_BUILDINGS = 1.0
 
 # Script state in the menu or the command palette
 # Return True or c4d.CMD_ENABLED to enable, False or 0 to disable

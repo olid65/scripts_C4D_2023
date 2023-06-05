@@ -32,8 +32,9 @@ def modify_cloner_children(obj, lst):
         obj = obj.GetNext()
 
 def main() -> None:
-    nom_remplace = '__remplacement'
-    null_remplace = doc.SearchObject(nom_remplace)
+    #nom_remplace = '__remplacement'
+    #null_remplace = doc.SearchObject(nom_remplace)
+    null_remplace = op
     if not null_remplace:
         print(f"""pas d'objet nommé"{nom_remplace}" """)
     objs = null_remplace.GetChildren()
