@@ -9,8 +9,8 @@ PLUGIN_ID_SWISSTOPOEXTRACTOR = 1058482
 
 
 ##############################
-SCALE_VERT_MNT = 2.5
-SCALE_VERT_BUILDINGS = 1.25
+SCALE_VERT_MNT = 5
+SCALE_VERT_BUILDINGS = 2
 #################################
 
 
@@ -67,7 +67,7 @@ def getFirstFloor(obj):
         if res :return res
         obj = obj.GetNext()
     return None
-        
+
 
 
 def main() -> None:
@@ -75,7 +75,7 @@ def main() -> None:
     if not op:
         c4d.gui.MessageDialog('Please select an object.')
         return
-    
+
     #récupération du basecontainer de l'objet
     #s'il n'existe pas on le crée et on met les échelles à 1
     bc = op[PLUGIN_ID_SWISSTOPOEXTRACTOR]
@@ -85,7 +85,7 @@ def main() -> None:
         #attention de bien laisser un float !
         bc[ID_SCALE_MNT]= float(1)
         bc[ID_SCALE_BUILDINGS]= float(1)
-    
+
     print(bc[ID_SCALE_MNT],bc[ID_SCALE_BUILDINGS])
 
     #TODO : faut-il avertir l'utilisateur qu'on efface les tags ?
@@ -146,7 +146,7 @@ def main() -> None:
         m_old_scale = c4d.utils.MatrixScale(c4d.Vector(1,1/bc[ID_SCALE_MNT],1))
         #matrice pour la nouvelle échelle
         m_new_scale =  c4d.utils.MatrixScale(c4d.Vector(1,SCALE_VERT_MNT,1))
-        
+
         #on multiplie par mg -> monde on multiplie par l'ancienne échelle -> on revient à la normale
         #et on multiplie par la nouvelle, puis inverse mg pour revenir en local (ouf!)
         pts = [p*mg*m_old_scale*m_new_scale*~ mg for p in obj.GetAllPoints()]
@@ -179,9 +179,9 @@ def main() -> None:
     ###############################
     # FLOOR
     ###############################
-    
+
     floor = getFirstFloor(doc.GetFirstObject())
-    if floor : 
+    if floor :
         pos = floor.GetAbsPos()
         pos.y/= bc[ID_SCALE_MNT]
         pos.y*= SCALE_VERT_MNT
@@ -191,7 +191,7 @@ def main() -> None:
     bc[ID_SCALE_BUILDINGS]= float(SCALE_VERT_BUILDINGS)
     op[PLUGIN_ID_SWISSTOPOEXTRACTOR] = bc
     c4d.EventAdd()
-    
+
     print(bc[ID_SCALE_MNT],bc[ID_SCALE_BUILDINGS])
 
 
