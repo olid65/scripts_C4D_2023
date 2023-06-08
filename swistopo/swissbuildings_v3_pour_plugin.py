@@ -253,10 +253,10 @@ def untriangulate(lst_objs,doc):
                                     doc=doc)
 
 
-def importSwissBuildings(path, doc, cube_mnt):
+def importSwissBuildings(path, doc, cube_mnt,xmin,ymin,xmax,ymax):
     #emprise objet
     origine = doc[CONTAINER_ORIGIN]
-    xmin,zmin,xmax,zmax = empriseObject(cube_mnt, origine)
+    #xmin,zmin,xmax,zmax = empriseObject(cube_mnt, origine)
 
     #nouveau doc pour Polygonize
     doc = c4d.documents.BaseDocument()
@@ -360,7 +360,7 @@ def importSwissBuildings(path, doc, cube_mnt):
     doc.InsertObject(boole)
 
     doc_poly = doc.Polygonize()
-    
+
     parent_bat = doc_poly.GetFirstObject().GetDown()
     ###############
     #Fermeture des trous
@@ -368,8 +368,8 @@ def importSwissBuildings(path, doc, cube_mnt):
     for ssobj in parent_bat.GetChildren():
         for o in ssobj.GetChildren():
             closePolys(o,doc)
-    
-            
+
+
     lst_polyobjs = getPolygonObjects(parent_bat,lst = [], stop = parent_bat)
     #print(len(lst_polyobjs))
     triangulate(lst_polyobjs,doc_poly)
@@ -377,9 +377,9 @@ def importSwissBuildings(path, doc, cube_mnt):
     res = parent_bat.GetClone()
     c4d.documents.KillDocument(doc)
     c4d.documents.KillDocument(doc_poly)
-    
+
     return res
-    
+
 
 def getPolygonObjects(obj,lst = [], stop = None):
     while obj:
@@ -398,13 +398,15 @@ def main() -> None:
     #emprise objet
     origine = doc[CONTAINER_ORIGIN]
     xmin,zmin,xmax,zmax = empriseObject(cube_mnt, origine)
+    ymin = 0
+    ymax =8000
 
-    path = "/Users/olivierdonze/Documents/TEMP/test_meyrin/swisstopo"
+    path = "/Users/olivierdonze/switchdrive/COURS/2023_impressions_maquettes/Grimsuat_Estelle_def/swisstopo"
 
-    bats = importSwissBuildings(path, doc, cube_mnt)
+    bats = importSwissBuildings(path, doc, cube_mnt,xmin,ymin,xmax,ymax)
     doc.InsertObject(bats)
     doc.AddUndo(c4d.UNDOTYPE_NEW,bats)
-    
+
     doc.EndUndo()
     c4d.EventAdd()
     return

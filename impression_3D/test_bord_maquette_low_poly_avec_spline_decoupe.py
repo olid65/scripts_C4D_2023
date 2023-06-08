@@ -71,18 +71,18 @@ def main() -> None:
         return
 
     spline_decoupe_mnt = op.GetNext()
-    
+
     #on vérifie qu'il y a bien un objet suivant
     if not spline_decoupe_mnt:
         c4d.gui.MessageDialog("L'objet suivant doit être une spline à 4 points")
         return
 
     #on vérifie que l'objet suivant est une spline et a 4 points
-    
+
     if not spline_decoupe_mnt.CheckType(c4d.Ospline):
         c4d.gui.MessageDialog("L'objet suivant doit être une spline à 4 points")
         return
-    
+
     if spline_decoupe_mnt.GetPointCount()!=4:
         c4d.gui.MessageDialog("L'objet suivant doit être une spline à 4 points")
         return
