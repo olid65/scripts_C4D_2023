@@ -9,15 +9,15 @@ PLUGIN_ID_SWISSTOPOEXTRACTOR = 1058482
 
 
 ##############################
-SCALE_VERT_MNT = 5
-SCALE_VERT_BUILDINGS = 2
+SCALE_VERT_MNT = 1.5
+SCALE_VERT_BUILDINGS = 1.5
 #################################
 
 
 NAME_MNT = 'swissalti3d'
 NAME_ARBRES = 'Arbres isolés'
 NAME_FORETS = 'Forêts'
-NAME_POLY_FORET = 'swissalti3d_50cm_extrait'
+NAME_POLY_FORET = 'swissalti3d_2m_extrait'
 NAME_POINTS_ARBRES_ISOLES = 'arbres_isoles_swisstopo_collets'
 
 NAME_BATI3D = 'swissbuildings3d_v3'
