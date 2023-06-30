@@ -5,7 +5,7 @@ import sys
 doc: c4d.documents.BaseDocument  # The active document
 op: Optional[c4d.BaseObject]  # The active object, None if unselected
 
-ALT_BASE = 0
+ALT_BASE = 450
 
 def add_point_at_base(pts, alt_base = ALT_BASE):
     # insert point at the beginning and the end of the list with y = alt_base
@@ -65,7 +65,7 @@ def main() -> None:
     #spline with all points min_x
     pts_max_x = [pt for pt in op.GetAllPoints() if pt.x == max_x]
     pts_min_x = [pt for pt in op.GetAllPoints() if pt.x == min_x]
-    pts_max_z = [pt for pt in op.GetAllPoints() if pt.z == max_z]   
+    pts_max_z = [pt for pt in op.GetAllPoints() if pt.z == max_z]
     pts_min_z = [pt for pt in op.GetAllPoints() if pt.z == min_z]
 
     #on inverse les points max pour que le spline soit dans le bon sens
@@ -91,11 +91,11 @@ def main() -> None:
 
     doc.StartUndo()
 
-    doc.InsertObject(connector)  
+    doc.InsertObject(connector)
     doc.AddUndo(c4d.UNDOTYPE_NEW, connector)
 
     doc.EndUndo()
-    
+
     c4d.EventAdd
     return
 

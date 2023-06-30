@@ -16,16 +16,16 @@ doc: c4d.documents.BaseDocument  # The active document
 op: Optional[c4d.BaseObject]  # The active object, None if unselected
 
 def main() -> None:
-    pth = '/Users/olivierdonze/Downloads/20_Outils de représentation graphique-Travail personnel pour lévaluation Indesign-2028616'
-    
+    pth = '/Users/olivierdonze/Downloads/20_Cinema 4D niveau 2-Travail de fin de module-2010866'
+
     path = Path(pth)
-    
+
     for z in sorted(path.rglob('*.zip')):
         pdir = Path(str(z)[:-4])
         if not pdir.is_dir():
             with zipfile.ZipFile(z, 'r') as zip_ref:
                 zip_ref.extractall(pdir.parent)
-    
+
 
 """
 def state():

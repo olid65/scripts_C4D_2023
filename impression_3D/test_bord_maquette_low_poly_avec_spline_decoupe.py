@@ -10,7 +10,7 @@ op: Optional[c4d.BaseObject]  # The active object, None if unselected
    La spline "base" doit être juste après et avoir 4 points ->rectangle
    ATTENTION de régler ALT_BASE"""
 
-ALT_BASE = 0
+ALT_BASE = 450
 
 def is_clockwise(pts):
     somme_produits = 0
