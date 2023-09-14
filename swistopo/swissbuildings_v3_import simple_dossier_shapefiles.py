@@ -10,7 +10,7 @@ op: Optional[c4d.BaseObject]  # The active object, None if unselected
 CONTAINER_ORIGIN = 1026473
 
 def import_swissbuildings3D_v3_shape(fn,doc):
-    
+
     r = shp.Reader(str(fn))
 
     xmin,ymin,xmax,ymax = r.bbox
@@ -24,10 +24,10 @@ def import_swissbuildings3D_v3_shape(fn,doc):
 
     # géométries
     shapes = r.shapes()
-    
+
     pts = []
     polys = []
-    
+
     id_pt = 0
     id_poly = 0
 
@@ -36,11 +36,6 @@ def import_swissbuildings3D_v3_shape(fn,doc):
         xs = [x for x,y in shape.points]
         zs = [y for x,y in shape.points]
         ys = [z for z in shape.z]
-
-        #pour l'axe on prend la moyenne de x et z et le min de y auquel on ajoute 3m
-        #car les bati swisstopo rajoute 3m sous le point le plus bas du MNT
-        #comme ça on peut modifier l'échelle des hauteurs
-        #axe = c4d.Vector((min(xs)+max(xs))/2,min(ys)+3,(min(zs)+max(zs))/2)
 
         pts_shp = [c4d.Vector(x,z,y)-origin for (x,y),z in zip(shape.points,shape.z)]
         pts+= pts_shp
@@ -64,7 +59,7 @@ def import_swissbuildings3D_v3_shape(fn,doc):
         po.SetAllPoints(pts)
         for i,poly in enumerate(polys):
             po.SetPolygon(i,poly)
-    
+
         #po.SetAbsPos(axe-origin)
         po.Message(c4d.MSG_UPDATE)
     else:
@@ -73,8 +68,17 @@ def import_swissbuildings3D_v3_shape(fn,doc):
     return po
 
 def main() -> None:
-    pth = Path('/Volumes/My Passport Pro/TEMP/Coteaux_dores/swisstopo/swissbuildings3d_v3/shapefiles')
-    
+    #pth = Path('/Volumes/My Passport Pro/TEMP/Coteaux_dores/swisstopo/swissbuildings3d_v3/shapefiles')
+
+    #chemin du document actif
+    pth = Path(doc.GetDocumentPath())
+    if not pth:
+        c4d.gui.MessageDialog('Document non enregistré')
+        return
+    pth = pth / 'swisstopo' / 'swissbuildings3d_v3' / 'shapefiles'
+    if not pth.exists():
+        print(f'pas de dossier {pth.name}')
+
     res = c4d.BaseObject(c4d.Onull)
     doc.InsertObject(res)
     res.SetName(pth.parent.name)
@@ -82,7 +86,7 @@ def main() -> None:
         p = import_swissbuildings3D_v3_shape(fn,doc)
         if p:
             p.InsertUnderLast(res)
-    
+
     c4d.EventAdd()
 
 """

@@ -126,19 +126,100 @@ def geojson_trees(bbox_or_spline,origine,fn_dst):
 
     return False
 
-def main() -> None:
-    pth = Path('/Volumes/My Passport Pro/TEMP/Chermignon_Crans/swisstopo')
+###########################################################
+# LECTURE FICHIERS JSON
+############################################################
+
+def pointObjectFromGeojson(fn,doc):
+    """ renvoie un objet polygonal avec uniquement les points du fichier geojson
+        avec un vertex color tag qui affiche toujours les points selon color"""
+
     origine = doc[CONTAINER_ORIGIN]
+    basename = fn.name
+    with open(fn) as f:
+        data = json.load(f)
+        error = data.get('error',None)
+        if error:
+            print(f"'{os.path.basename(fn)}' n'a pas été téléchargé correctement")
+            print(f"code : {error['code']} {error['message']}")
+            for detail in error['details']:
+                print(f"--> {detail}")
+            return None
+
+
+        pts = []
+        features = data.get('features',None)
+        if not features:
+            print(f"No 'features' in {basename}")
+            return None
+
+        for feat in features:
+            x,y,z = feat['geometry']['coordinates']
+            pz = c4d.Vector(x,z,y)
+            if not origine:
+                origine = pz
+                doc[CONTAINER_ORIGIN] = origine
+            pts.append(c4d.Vector(x,z,y)-origine)
+
+
+        nb_pts = len(pts)
+        pos = sum(pts)/nb_pts
+        pts = [p-pos for p in pts]
+
+        res = c4d.PolygonObject(nb_pts,0)
+        res.SetAllPoints(pts)
+        res.SetName(basename)
+
+        #vertex_color_tag = c4d.VertexColorTag(nb_pts)
+        #vertex_color_tag[c4d.ID_VERTEXCOLOR_DRAWPOINTS] = True
+
+        #data = vertex_color_tag.GetDataAddressW()
+        #for idx in range(nb_pts):
+            #c4d.VertexColorTag.SetPoint(data, None, None, idx, color)
+        #res.InsertTag(vertex_color_tag)
+
+        res.SetAbsPos(pos)
+
+        return res
+
+def main() -> None:
+    origine = doc[CONTAINER_ORIGIN]
+    if not origine:
+        c4d.gui.MessageDialog('Origin must be set')
+        return
+
+    #chemin du document actif
+    pth = Path(doc.GetDocumentPath())
+    if not pth:
+        c4d.gui.MessageDialog('Document must be saved')
+        return
+    pth = pth / 'swisstopo' / 'arbres_isoles'
+    if not pth.exists():
+        pth.mkdir(parents=True)
+
+
     id_fn = 1
+    lst_geojson = []
     for sp in op.GetChildren():
         fn_dst = pth / f'arbres_isoles_{str(id_fn).zfill(2)}.geojson'
-        geojson_trees(sp,origine,fn_dst)
-        print(fn_dst)
+        lst_geojson.append(fn_dst)
+        if not fn_dst.is_file():
+            geojson_trees(sp,origine,fn_dst)
+            print(fn_dst)
         id_fn +=1
-        
-        
-    
-    
+
+    #import des geojson dans c4d
+    for fn in lst_geojson:
+        isol_trees = pointObjectFromGeojson(fn,doc)
+        if isol_trees:
+            doc.InsertObject(isol_trees)
+            nb_pts = isol_trees.GetPointCount()
+            if nb_pts >= 20000 :
+                print(f"{isol_trees.GetName()} contient au moins 20'000 points")
+
+    c4d.EventAdd()
+
+
 
 
 """

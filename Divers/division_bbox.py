@@ -5,7 +5,8 @@ doc: c4d.documents.BaseDocument  # The active document
 op: Optional[c4d.BaseObject]  # The active object, None if unselected
 
 CONTAINER_ORIGIN = 1026473
-FACTEUR_DIV = 3
+FACTEUR_DIV = 4
+
 
 def main() -> None:
     # récupération de l'origine du document
@@ -46,11 +47,11 @@ def main() -> None:
             pos.x += largeur
         pos.z += hauteur
         pos.x = pts[0].x
-    
+
     c4d.EventAdd()
 
-    
-    
+
+
 
 
 """

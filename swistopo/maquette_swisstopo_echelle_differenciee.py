@@ -9,8 +9,8 @@ PLUGIN_ID_SWISSTOPOEXTRACTOR = 1058482
 
 
 ##############################
-SCALE_VERT_MNT = 1.5
-SCALE_VERT_BUILDINGS = 1.5
+SCALE_VERT_MNT = 2.5
+SCALE_VERT_BUILDINGS = 1.25
 #################################
 
 

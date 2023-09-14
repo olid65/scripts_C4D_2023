@@ -3,6 +3,7 @@ import json
 import os.path
 import sys
 from pprint import pprint
+from pathlib import Path
 
 #sys.path.append('/Users/olivierdonze/Library/Preferences/Maxon/Maxon Cinema 4D R25_EBA43BEE/library/scripts/swisstopo/utils')
 #import geojson
@@ -21,9 +22,11 @@ CONTAINER_ORIGIN = 1026473
 # LECTURE FICHIERS JSON
 ############################################################
 
-def pointObjectFromGeojson(fn,origine):
+def pointObjectFromGeojson(fn,doc):
     """ renvoie un objet polygonal avec uniquement les points du fichier geojson
         avec un vertex color tag qui affiche toujours les points selon color"""
+    
+    origine = doc[CONTAINER_ORIGIN]
     basename = os.path.basename(fn)
     with open(fn) as f:
         data = json.load(f)
@@ -44,6 +47,10 @@ def pointObjectFromGeojson(fn,origine):
 
         for feat in features:
             x,y,z = feat['geometry']['coordinates']
+            pz = c4d.Vector(x,z,y)
+            if not origine:
+                origine = pz
+                doc[CONTAINER_ORIGIN] = origine
             pts.append(c4d.Vector(x,z,y)-origine)
 
 
@@ -173,6 +180,27 @@ def mograph_system_trees(trees_sommets, mnt, arbres_sources, doc):
 
 # Main function
 def main():
+    
+
+    #chemin du document actif
+    pth = Path(doc.GetDocumentPath())
+    if not pth:
+        c4d.gui.MessageDialog('Document must be saved')
+        return
+    pth = pth / 'swisstopo' / 'arbres_isoles'
+    if not pth.exists():
+        c4d.gui.MessageDialog('swisstopo/arbres_isoles folder must exist')
+        return
+    
+    for fn in pth.glob('*.geojson'):
+        print(fn)
+        #ARBRES ISOLES
+        isol_trees = pointObjectFromGeojson(fn,doc)
+        if isol_trees:
+            doc.InsertObject(isol_trees)
+
+    c4d.EventAdd()
+    return
 
 
     fn_trees = '/Volumes/My Passport Pro/TEMP/Chermignon_Crans/swisstopo/arbres_isoles_merged.geojson'
